@@ -1,6 +1,5 @@
 package me.polles.quinto.tadsshare;
 
-import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
 
@@ -15,43 +14,30 @@ import br.univel.jshare.comum.Cliente;
 
 public class ArquivoModel extends AbstractTableModel implements TableModel{
 
-	private Object[][] matrix;
+	private Map<Object, List<Object>> matrix2;
 	private int rows;
 	private static final long serialVersionUID = -5259217698492435038L;
 	
 	public ArquivoModel(Map<Cliente, List<Arquivo>> mapArquivos){
-		if(!mapArquivos.isEmpty()){
+		if(!mapArquivos.isEmpty()){			
+			
 			rows = 0;
-			mapArquivos.entrySet().forEach(e -> {
-				rows+=e.getValue().size();
-			});
-			
-			matrix = new Object[rows][6];
-			
-			
-			
-			int row = 0;
-			
+			matrix2 = new HashMap<Object, List<Object>>();
+			List<Object> objetos = new ArrayList<Object>();
 			for (Entry<Cliente, List<Arquivo>> e : mapArquivos.entrySet()) {
-				for (Arquivo arq : e.getValue()) {
-					System.out.println(e.getKey().getNome());
-					matrix[row][0] = e.getKey().getNome();
-					matrix[row][1] = e.getKey().getIp();
-					matrix[row][2] = arq.getNome();
-					matrix[row][3] = arq.getTamanho();
-					matrix[row][4] = arq;
-					matrix[row][5] = e;
-					row++;
+				for (Arquivo arquivo : e.getValue()) {
+					objetos.add(e.getKey().getNome());
+					objetos.add(e.getKey().getIp());
+					objetos.add(arquivo.getNome() + "." + arquivo.getExtensao());
+					objetos.add(String.valueOf(arquivo.getTamanho()));
+					objetos.add(arquivo);
+					objetos.add(e);
+					matrix2.put(rows++, objetos);
 				}
 			}
 		}
 	}
 
-	@Override
-	public Class<?> getColumnClass(int arg0) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 	@Override
 	public int getColumnCount() {
@@ -75,17 +61,16 @@ public class ArquivoModel extends AbstractTableModel implements TableModel{
 
 	@Override
 	public int getRowCount() {
-		return matrix.length;
+		return rows;
+	}
+	
+	public void setRowCount(int rows) {
+		this.rows = rows;
 	}
 
 	@Override
 	public Object getValueAt(int arg0, int arg1) {
-		return matrix[arg0][arg1];
-	}
-
-	@Override
-	public boolean isCellEditable(int arg0, int arg1) {
-		return false;
+		return matrix2.get(arg0).get(arg1);
 	}
 
 }

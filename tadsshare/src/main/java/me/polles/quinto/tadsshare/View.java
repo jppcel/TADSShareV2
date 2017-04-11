@@ -5,6 +5,8 @@ import java.awt.BorderLayout;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 
 import br.univel.jshare.comum.Arquivo;
 import br.univel.jshare.comum.Cliente;
@@ -60,6 +62,8 @@ public class View extends JFrame {
 	private JTextPane txt_Log;
 	private JLabel lblPorta;
 	private JTextField tf_porta;
+	
+	private DefaultTableModel defaultModel = new DefaultTableModel();
 
 
 	/**
@@ -366,8 +370,12 @@ public class View extends JFrame {
 	
 	public void search(){
 		Map<Cliente, List<Arquivo>> arquivos = main.search(tf_pesquisa.getText(), (TipoFiltro) cb_tipoFiltro.getSelectedItem(), tf_filtro.getText());
-		ArquivoModel arquivoModel = new ArquivoModel(arquivos);
-		table.setModel(arquivoModel);
+		if(arquivos.size() == 0){
+			table.setModel(defaultModel);
+		}else{
+			TableModel arquivoModel = new ArquivoModel(arquivos);
+			table.setModel(arquivoModel);
+		}
 	}
 	
 	public void addClient(Cliente client){

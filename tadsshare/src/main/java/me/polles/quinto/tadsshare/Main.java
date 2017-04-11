@@ -116,6 +116,7 @@ public class Main {
 			e.printStackTrace();
 		}
 	}
+	
 	public void publishArchivesList(){
 		try {
 			List<Arquivo> mapArquivo = capturaArquivos(new File("share"));
