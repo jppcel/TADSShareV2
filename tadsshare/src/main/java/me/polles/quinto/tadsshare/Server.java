@@ -45,6 +45,8 @@ public class Server implements IServer, Runnable, Serializable {
 		clientes.add(cliente);
 		
 		main.log("Conexão -> " + cliente.getNome());
+		
+		main.updateClientList(clientes);
 	}
 
 	public void publicarListaArquivos(Cliente cliente, List<Arquivo> lista) throws RemoteException {

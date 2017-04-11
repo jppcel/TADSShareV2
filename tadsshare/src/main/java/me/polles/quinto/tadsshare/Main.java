@@ -1,15 +1,22 @@
 package me.polles.quinto.tadsshare;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+
+import javax.swing.DefaultListModel;
 
 import br.univel.jshare.comum.Cliente;
 import br.univel.jshare.comum.IServer;
@@ -24,6 +31,7 @@ public class Main {
 	private IServer iserver;
 	private Cliente cliente;
 	private int isConnected;
+	private Thread server;
 	
 	public Main(){
 		try {
@@ -38,14 +46,13 @@ public class Main {
 				share.mkdir();
 			}
 
-			Thread server = new Thread(new Server(Main.this));
-			server.start();
-
 			cliente = new Cliente();
 			cliente.setNome(IP.getHostName());
 			cliente.setPorta(Server.PORTA_TCPIP);
 			cliente.setIp(IP.getHostAddress());
 			
+			server = new Thread(new Server(Main.this));
+			server.start();
 			
 		} catch (UnknownHostException e1) {
 			e1.printStackTrace();
@@ -64,6 +71,8 @@ public class Main {
 				arquivoComum.setId(nextId++);
 				arquivoComum.setNome(file.getName());
 				arquivoComum.setPath(file.getPath());
+				arquivoComum.setExtensao(file.getName().substring(file.getName().lastIndexOf("."), file.getName().length()));
+				arquivoComum.setDataHoraModificacao(new Date(file.lastModified()));
 				arquivoComum.setTamanho(file.length());
 				arquivoComum.setMd5(Md5Util.getMD5Checksum(file.getAbsolutePath()));
 				listaArquivos.add(arquivoComum);
@@ -81,7 +90,7 @@ public class Main {
 			iserver =  (IServer) registry.lookup(IServer.NOME_SERVICO);
 			publishArchivesList();
 		} catch (RemoteException e) {
-			view.addLog("Problemas de conexão");
+			view.addLog("Problemas de conexão com o servidor informado.");
 		} catch (NotBoundException e) {
 			e.printStackTrace();
 		}
@@ -141,5 +150,51 @@ public class Main {
 
 	public int getIsConnected() {
 		return isConnected;
+	}
+
+	public void downloadArchive(Cliente cliente, Arquivo arquivo) {
+		try {
+			Registry serverDownload = LocateRegistry.getRegistry(cliente.getIp(), cliente.getPorta());
+			IServer iserverDownload = (IServer) serverDownload.lookup(IServer.NOME_SERVICO);
+			byte[] data = iserverDownload.baixarArquivo(cliente, arquivo);
+			if(data != null){
+				String path = "share"+File.separatorChar+arquivo.getNome();
+				File file = new File(path);
+				
+				if(file.exists()){
+					path = "share"+File.separatorChar+arquivo.getNome();
+				}
+				
+				Files.write(Paths.get(path), data, StandardOpenOption.CREATE);
+				
+				if(arquivo.getMd5().equals(Md5Util.getMD5Checksum(path))){
+					view.popup("Arquivo baixado!");
+					publishArchivesList();
+				}else{
+					view.popup("Arquivo corrompido!");
+					file = new File(path);
+					file.delete();
+				}
+				iserverDownload = null;
+				serverDownload = null;
+			}
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NotBoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	public void updateClientList(List<Cliente> clientes) {
+		DefaultListModel<String> listModel = new DefaultListModel<>();
+		clientes.forEach(e -> {
+			listModel.addElement(e.getNome());
+		});
+		view.setJList(listModel);
 	}
 }

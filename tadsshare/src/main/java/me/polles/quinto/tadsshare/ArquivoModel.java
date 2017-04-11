@@ -26,12 +26,13 @@ public class ArquivoModel extends AbstractTableModel implements TableModel{
 			List<Object> objetos = new ArrayList<Object>();
 			for (Entry<Cliente, List<Arquivo>> e : mapArquivos.entrySet()) {
 				for (Arquivo arquivo : e.getValue()) {
+					objetos = new ArrayList<Object>();
 					objetos.add(e.getKey().getNome());
 					objetos.add(e.getKey().getIp());
-					objetos.add(arquivo.getNome() + "." + arquivo.getExtensao());
+					objetos.add(arquivo.getNome());
 					objetos.add(String.valueOf(arquivo.getTamanho()));
+					objetos.add(e.getKey());
 					objetos.add(arquivo);
-					objetos.add(e);
 					matrix2.put(rows++, objetos);
 				}
 			}
@@ -39,7 +40,7 @@ public class ArquivoModel extends AbstractTableModel implements TableModel{
 	}
 
 
-	@Override
+	@Override		
 	public int getColumnCount() {
 		return 4;
 	}
