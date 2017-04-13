@@ -66,6 +66,7 @@ public class View extends JFrame {
 	private JTextField tf_porta;
 	
 	private DefaultTableModel defaultModel = new DefaultTableModel();
+	private DefaultListModel defaultList = new DefaultListModel();
 	private JLabel label;
 
 
@@ -215,8 +216,6 @@ public class View extends JFrame {
 		panelHeader.add(btnPesquisar, gbc_btnPesquisar);
 		
 		cb_tipoFiltro = new JComboBox(TipoFiltro.values());
-		cb_tipoFiltro.setEnabled(false);
-		cb_tipoFiltro.setEditable(true);
 		GridBagConstraints gbc_cb_tipoFiltro = new GridBagConstraints();
 		gbc_cb_tipoFiltro.insets = new Insets(0, 0, 5, 5);
 		gbc_cb_tipoFiltro.fill = GridBagConstraints.HORIZONTAL;
@@ -363,6 +362,7 @@ public class View extends JFrame {
 			cb_tipoFiltro.setEnabled(false);
 			
 			clearTable();
+			list.setModel(defaultList);
 		}
 	}
 	
