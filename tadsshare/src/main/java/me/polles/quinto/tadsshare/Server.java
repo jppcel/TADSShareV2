@@ -40,11 +40,11 @@ public class Server implements IServer, Runnable, Serializable {
 	}
 
 	public void registrarCliente(Cliente cliente) throws RemoteException {
-		cliente.setId(proxId);
+		//cliente.setId(proxId);
 		proxId++;
 		clientes.add(cliente);
 		
-		main.log("Conexão -> " + cliente.getNome());
+		main.log("SERVIDOR: Conexão -> " + cliente.getNome());
 		
 		main.updateClientList(clientes);
 	}
@@ -55,7 +55,7 @@ public class Server implements IServer, Runnable, Serializable {
 				arquivos.remove(cliente);
 			}
 			arquivos.put(cliente, lista);
-			main.log("Lista de Arquivos -> O cliente " + cliente.getNome() + " publicou uma lista de arquivos.");
+			main.log("SERVIDOR: Lista de Arquivos -> O cliente " + cliente.getNome() + " publicou uma lista de arquivos.");
 		}
 	}
 
@@ -115,7 +115,7 @@ public class Server implements IServer, Runnable, Serializable {
 			arquivos.remove(cliente);
 		}
 		clientes.remove(cliente);
-		main.log("Desconexão -> " + cliente.getNome());
+		main.log("SERVIDOR: Desconexão -> " + cliente.getNome() + "(" +  cliente.getIp() + ")");
 	}
 
 	@Override
