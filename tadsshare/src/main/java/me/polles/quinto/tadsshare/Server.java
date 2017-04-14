@@ -1,5 +1,6 @@
 package me.polles.quinto.tadsshare;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Files;
@@ -31,8 +32,6 @@ public class Server implements IServer, Runnable, Serializable {
 	private IServer iserver;
 	private final Main main;
 	
-	public static final int PORTA_TCPIP = 1818;
-	
 	public Server(Main main){
 		clientes = new ArrayList<Cliente>();
 		arquivos = new HashMap<Cliente, List<Arquivo>>();
@@ -44,7 +43,7 @@ public class Server implements IServer, Runnable, Serializable {
 		proxId++;
 		clientes.add(cliente);
 		
-		main.log("SERVIDOR: Conexão -> " + cliente.getNome());
+		main.logServer("SERVIDOR: Conexão -> " + cliente.getNome());
 		
 		main.updateClientList(clientes);
 	}
@@ -55,7 +54,7 @@ public class Server implements IServer, Runnable, Serializable {
 				arquivos.remove(cliente);
 			}
 			arquivos.put(cliente, lista);
-			main.log("SERVIDOR: Lista de Arquivos -> O cliente " + cliente.getNome() + " publicou uma lista de arquivos.");
+			main.logServer("SERVIDOR: Lista de Arquivos -> O cliente " + cliente.getNome() + " publicou uma lista de arquivos.");
 		}
 	}
 
@@ -101,13 +100,22 @@ public class Server implements IServer, Runnable, Serializable {
 	public byte[] baixarArquivo(Cliente cliente, Arquivo arquivo) throws RemoteException {
 		byte[] data = null;
 		Path path = Paths.get(arquivo.getPath());
+		File file = new File(arquivo.getPath());
 		try {
-			data = Files.readAllBytes(path);
-			main.log("CLIENTE: " + cliente.getNome() + ", " + cliente.getIp() + " baixou o arquivo " + arquivo.getNome());
-			return data;
+			if(file.exists()){
+				data = Files.readAllBytes(path);
+				main.logClient("CLIENTE: " + cliente.getNome() + ", " + cliente.getIp() + " baixou o arquivo " + arquivo.getNome());
+				return data;
+			}else{
+				main.atualizarArquivos();
+				throw new FileNotFoundException();
+			}
 		} catch (IOException e) {
 			throw new RuntimeException(e);
+		} catch (FileNotFoundException e){
+			main.logServer("SERVIDOR: O cliente " + cliente.getNome() + "(" + cliente.getIp() + ") tentou baixar o arquivo " + arquivo.getNome() + " que não se encontra mais disponível.");
 		}
+		return null;
 	}
 
 	public void desconectar(Cliente cliente) throws RemoteException {
@@ -115,17 +123,17 @@ public class Server implements IServer, Runnable, Serializable {
 			arquivos.remove(cliente);
 		}
 		clientes.remove(cliente);
-		main.log("SERVIDOR: Desconexão -> " + cliente.getNome() + "(" +  cliente.getIp() + ")");
+		main.logServer("SERVIDOR: Desconexão -> " + cliente.getNome() + "(" +  cliente.getIp() + ")");
 	}
 
 	@Override
 	public void run() {
 		try {
-			main.log("SERVIDOR: Iniciando...");
+			main.logServer("SERVIDOR: Iniciando...");
 			iserver = (IServer) UnicastRemoteObject.exportObject(this, 0);
-			Registry registry = LocateRegistry.createRegistry(PORTA_TCPIP);
+			Registry registry = LocateRegistry.createRegistry(main.getPort());
 			registry.rebind(IServer.NOME_SERVICO, iserver);
-			main.log("SERVIDOR: Iniciado. Aguardando conexões.");
+			main.logServer("SERVIDOR: Iniciado. Aguardando conexões.");
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}

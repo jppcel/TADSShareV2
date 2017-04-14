@@ -11,12 +11,14 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 import javax.swing.DefaultListModel;
+import javax.swing.JOptionPane;
 
 import br.univel.jshare.comum.Cliente;
 import br.univel.jshare.comum.IServer;
@@ -32,27 +34,29 @@ public class Main {
 	private Cliente cliente;
 	private int isConnected;
 	private Thread server;
+	private int port;
+	private File share;
 	
 	public Main(){
 		try {
-			view = new View(Main.this);
-			view.setVisible(true);
+			port = Integer.valueOf(JOptionPane.showInputDialog("Qual é a porta que deseja iniciar o servidor?", "1818"));
+			
 			
 			IP = InetAddress.getLocalHost();
-			view.setWindowTitle(IP.getHostAddress());
+			view = new View(Main.this);
+			view.setVisible(true);
+			view.setWindowTitle(IP.getHostAddress() + ":" + port);
+			
 
-			File share = new File("share");
+			share = new File("share");
 			if(!share.exists()){
 				share.mkdir();
 			}
 
 			cliente = new Cliente();
 			cliente.setNome(IP.getHostName());
-			cliente.setPorta(Server.PORTA_TCPIP);
+			cliente.setPorta(port);
 			cliente.setIp(IP.getHostAddress());
-			
-			server = new Thread(new Server(Main.this));
-			server.start();
 			
 		} catch (UnknownHostException e1) {
 			e1.printStackTrace();
@@ -85,13 +89,21 @@ public class Main {
 	
 	private void rmiConnect(String ip, int port){
 		Registry registry;
-		try {
+		try {			
+			server = new Thread(new Server(Main.this));
+			server.start();
+			
+			Thread.sleep(500);
+			
 			registry = LocateRegistry.getRegistry(ip, port);
 			iserver =  (IServer) registry.lookup(IServer.NOME_SERVICO);
 			publishArchivesList();
 		} catch (RemoteException e) {
-			view.addLog("Problemas de conexão com o servidor informado.");
+			view.addLogClient("CLIENTE: Problemas de conexão com o servidor informado.");
 		} catch (NotBoundException e) {
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -108,7 +120,7 @@ public class Main {
 	
 	public void iAmTheServer(){
 		try {
-			rmiConnect(IP.getHostAddress(), Server.PORTA_TCPIP);
+			rmiConnect(IP.getHostAddress(), port);
 			iserver.registrarCliente(cliente);
 			isConnected = 1;
 		} catch (RemoteException e) {
@@ -121,6 +133,7 @@ public class Main {
 			iserver.desconectar(cliente);
 			iserver = null;
 			isConnected = 0;
+			server.interrupt();
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
@@ -144,8 +157,12 @@ public class Main {
 		return null;
 	}
 	
-	public void log(String log){
-		view.addLog(log);
+	public void logServer(String log){
+		view.addLogServer(log);
+	}
+	
+	public void logClient(String log){
+		view.addLogClient(log);
 	}
 
 	public int getIsConnected() {
@@ -162,7 +179,8 @@ public class Main {
 				File file = new File(path);
 				
 				if(file.exists()){
-					path = "share"+File.separatorChar+arquivo.getNome();
+					Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+					path = "share"+File.separatorChar+ timestamp.getTime() + "_" + arquivo.getNome();
 				}
 				
 				Files.write(Paths.get(path), data, StandardOpenOption.CREATE);
@@ -196,5 +214,12 @@ public class Main {
 			listModel.addElement(e.getNome());
 		});
 		view.setJList(listModel);
+	}
+	public int getPort(){
+		return port;
+	}
+
+	public void atualizarArquivos() {
+		capturaArquivos(share);
 	}
 }

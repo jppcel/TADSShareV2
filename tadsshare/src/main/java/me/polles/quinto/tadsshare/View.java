@@ -45,8 +45,8 @@ public class View extends JFrame {
 	private JTextField tf_pesquisa;
 	private JTextField tf_filtro;
 	
-	private JButton btnIniciarComoServer;
-	private JButton btnAcessar;
+	private JButton btnServerOn;
+	private JButton btnOn;
 	private JButton btnPesquisar;
 	
 	private JComboBox cb_tipoFiltro;
@@ -61,13 +61,17 @@ public class View extends JFrame {
 	private JList<String> list;
 	private JScrollPane panelTable;
 	private JTable table;
-	private JScrollPane scrollPane;
-	private JTextPane txt_Log;
 	private JTextField tf_porta;
 	
 	private DefaultTableModel defaultModel = new DefaultTableModel();
 	private DefaultListModel defaultList = new DefaultListModel();
 	private JLabel label;
+	private JButton btnOff;
+	private JSplitPane splitPane;
+	private JScrollPane scrollPane;
+	private JScrollPane scrollPane_1;
+	private JTextPane txt_logServer;
+	private JTextPane txt_logClient;
 
 
 	/**
@@ -87,9 +91,9 @@ public class View extends JFrame {
 		JPanel panelHeader = new JPanel();
 		contentPane.add(panelHeader, BorderLayout.NORTH);
 		GridBagLayout gbl_panelHeader = new GridBagLayout();
-		gbl_panelHeader.columnWidths = new int[]{0, 0, 0, 0, 0, 0, 0, 0};
+		gbl_panelHeader.columnWidths = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0};
 		gbl_panelHeader.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0};
-		gbl_panelHeader.columnWeights = new double[]{0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gbl_panelHeader.columnWeights = new double[]{0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		gbl_panelHeader.rowWeights = new double[]{0.0, 0.0, 0.0, Double.MIN_VALUE, 0.0, 0.0, 1.0};
 		panelHeader.setLayout(gbl_panelHeader);
 		
@@ -128,19 +132,11 @@ public class View extends JFrame {
 		panelHeader.add(tf_porta, gbc_tf_porta);
 		tf_porta.setColumns(10);
 		
-		btnIniciarComoServer = new JButton("Iniciar como Servidor");
-		btnIniciarComoServer.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseReleased(MouseEvent e) {
-				serverConnect();
-			}
-		});
-		
-		btnAcessar = new JButton("Conectar");
-		btnAcessar.addMouseListener(new MouseAdapter() {
+		btnOn = new JButton("ON");
+		btnOn.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseReleased(MouseEvent arg0) {
-				toggleConnect();
+				connect();
 			}
 		});
 		GridBagConstraints gbc_btnAcessar = new GridBagConstraints();
@@ -148,17 +144,39 @@ public class View extends JFrame {
 		gbc_btnAcessar.insets = new Insets(0, 0, 5, 5);
 		gbc_btnAcessar.gridx = 5;
 		gbc_btnAcessar.gridy = 0;
-		panelHeader.add(btnAcessar, gbc_btnAcessar);
+		panelHeader.add(btnOn, gbc_btnAcessar);
+		
+		btnServerOn = new JButton("Server ON");
+		btnServerOn.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				serverConnect();
+			}
+		});
 		GridBagConstraints gbc_btnIniciarComoServer = new GridBagConstraints();
-		gbc_btnIniciarComoServer.insets = new Insets(0, 0, 5, 0);
+		gbc_btnIniciarComoServer.insets = new Insets(0, 0, 5, 5);
 		gbc_btnIniciarComoServer.gridx = 6;
 		gbc_btnIniciarComoServer.gridy = 0;
-		panelHeader.add(btnIniciarComoServer, gbc_btnIniciarComoServer);
+		panelHeader.add(btnServerOn, gbc_btnIniciarComoServer);
+		
+		btnOff = new JButton("OFF");
+		btnOff.setEnabled(false);
+		btnOff.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				disconnect();
+			}
+		});
+		GridBagConstraints gbc_btnOff = new GridBagConstraints();
+		gbc_btnOff.fill = GridBagConstraints.HORIZONTAL;
+		gbc_btnOff.insets = new Insets(0, 0, 5, 0);
+		gbc_btnOff.gridx = 7;
+		gbc_btnOff.gridy = 0;
+		panelHeader.add(btnOff, gbc_btnOff);
 		
 		JSeparator separator_1 = new JSeparator();
 		separator_1.setForeground(Color.WHITE);
 		GridBagConstraints gbc_separator_1 = new GridBagConstraints();
-		gbc_separator_1.gridwidth = 7;
+		gbc_separator_1.gridwidth = 8;
 		gbc_separator_1.insets = new Insets(0, 0, 5, 0);
 		gbc_separator_1.gridx = 0;
 		gbc_separator_1.gridy = 1;
@@ -167,7 +185,7 @@ public class View extends JFrame {
 		JSeparator separator = new JSeparator();
 		separator.setForeground(Color.WHITE);
 		GridBagConstraints gbc_separator = new GridBagConstraints();
-		gbc_separator.gridwidth = 7;
+		gbc_separator.gridwidth = 8;
 		gbc_separator.insets = new Insets(0, 0, 5, 0);
 		gbc_separator.gridx = 0;
 		gbc_separator.gridy = 2;
@@ -184,7 +202,7 @@ public class View extends JFrame {
 		tf_pesquisa = new JTextField();
 		tf_pesquisa.setEnabled(false);
 		GridBagConstraints gbc_tf_pesquisa = new GridBagConstraints();
-		gbc_tf_pesquisa.gridwidth = 5;
+		gbc_tf_pesquisa.gridwidth = 6;
 		gbc_tf_pesquisa.insets = new Insets(0, 0, 5, 5);
 		gbc_tf_pesquisa.fill = GridBagConstraints.HORIZONTAL;
 		gbc_tf_pesquisa.gridx = 1;
@@ -211,7 +229,7 @@ public class View extends JFrame {
 		gbc_btnPesquisar.insets = new Insets(0, 0, 5, 0);
 		gbc_btnPesquisar.gridheight = 2;
 		gbc_btnPesquisar.fill = GridBagConstraints.BOTH;
-		gbc_btnPesquisar.gridx = 6;
+		gbc_btnPesquisar.gridx = 7;
 		gbc_btnPesquisar.gridy = 3;
 		panelHeader.add(btnPesquisar, gbc_btnPesquisar);
 		
@@ -234,7 +252,7 @@ public class View extends JFrame {
 		tf_filtro = new JTextField();
 		tf_filtro.setEnabled(false);
 		GridBagConstraints gbc_tf_filtro = new GridBagConstraints();
-		gbc_tf_filtro.gridwidth = 3;
+		gbc_tf_filtro.gridwidth = 4;
 		gbc_tf_filtro.insets = new Insets(0, 0, 5, 5);
 		gbc_tf_filtro.fill = GridBagConstraints.HORIZONTAL;
 		gbc_tf_filtro.gridx = 3;
@@ -250,6 +268,8 @@ public class View extends JFrame {
 		});
 		btnLimparTabela.setEnabled(false);
 		GridBagConstraints gbc_btnLimparTabela = new GridBagConstraints();
+		gbc_btnLimparTabela.fill = GridBagConstraints.HORIZONTAL;
+		gbc_btnLimparTabela.gridwidth = 2;
 		gbc_btnLimparTabela.insets = new Insets(0, 0, 5, 5);
 		gbc_btnLimparTabela.gridx = 5;
 		gbc_btnLimparTabela.gridy = 5;
@@ -265,7 +285,7 @@ public class View extends JFrame {
 		GridBagConstraints gbc_btnDownload = new GridBagConstraints();
 		gbc_btnDownload.insets = new Insets(0, 0, 5, 0);
 		gbc_btnDownload.fill = GridBagConstraints.HORIZONTAL;
-		gbc_btnDownload.gridx = 6;
+		gbc_btnDownload.gridx = 7;
 		gbc_btnDownload.gridy = 5;
 		panelHeader.add(btnDownload, gbc_btnDownload);
 		
@@ -306,55 +326,41 @@ public class View extends JFrame {
 		table = new JTable();
 		panelTable.setViewportView(table);
 		
-		scrollPane = new JScrollPane();
-		scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		panelSplit.setRightComponent(scrollPane);
+		splitPane = new JSplitPane();
+		splitPane.setResizeWeight(0.5);
+		panelSplit.setRightComponent(splitPane);
 		
-		txt_Log = new JTextPane();
-		txt_Log.setBackground(Color.BLACK);
-		txt_Log.setForeground(Color.GREEN);
-		scrollPane.setViewportView(txt_Log);
+		scrollPane = new JScrollPane();
+		splitPane.setLeftComponent(scrollPane);
+		
+		txt_logServer = new JTextPane();
+		txt_logServer.setBackground(Color.BLACK);
+		txt_logServer.setForeground(Color.GREEN);
+		scrollPane.setViewportView(txt_logServer);
+		
+		scrollPane_1 = new JScrollPane();
+		splitPane.setRightComponent(scrollPane_1);
+		
+		txt_logClient = new JTextPane();
+		txt_logClient.setForeground(Color.ORANGE);
+		txt_logClient.setBackground(Color.BLACK);
+		scrollPane_1.setViewportView(txt_logClient);
 	}
 	
-	protected void download() {
-		int row = table.getSelectedRow();
-		ArquivoModel model = (ArquivoModel) table.getModel();
-		main.downloadArchive((Cliente) model.getValueAt(row, 4), (Arquivo) model.getValueAt(row,5));
-	}
-
-	protected void clearTable() {
-		table.setModel(defaultModel);
-	}
-
-	public void toggleConnect(){
-		if(main.getIsConnected() == 0){
-			addLog("CLIENTE: Conexão sendo efetuada em " + tf_servidor.getText() + ":" + tf_porta.getText());
-			main.connectServer(tf_servidor.getText(), Integer.valueOf(tf_porta.getText()));
-			
-			tf_servidor.setEnabled(false);
-			tf_porta.setEnabled(false);
-			tf_pesquisa.setEnabled(true);
-			tf_filtro.setEnabled(true);
-			
-			btnAcessar.setText("Desconectar");
-			btnIniciarComoServer.setEnabled(false);	
-			btnPesquisar.setEnabled(true);
-			btnDownload.setEnabled(true);
-			btnLimparTabela.setEnabled(true);
-			
-			cb_tipoFiltro.setEnabled(true);
-		}else{
-			addLog("CLIENTE: Desconexão sendo efetuada em " + txt_Log.getText());
+	protected void disconnect() {
+		if(btnOff.isEnabled()){
 			main.disconnectServer();
+			addLogClient("CLIENTE: Desconexão efetuada.");
 			tf_servidor.setEnabled(true);
 			tf_servidor.setText("");
 			tf_porta.setEnabled(true);
 			tf_porta.setText("");
 			tf_pesquisa.setEnabled(false);
 			tf_filtro.setEnabled(false);
-
-			btnAcessar.setText("Conectar");
-			btnIniciarComoServer.setEnabled(true);
+	
+			btnOff.setEnabled(false);
+			btnOn.setEnabled(true);
+			btnServerOn.setEnabled(true);
 			btnPesquisar.setEnabled(false);
 			btnDownload.setEnabled(false);
 			btnLimparTabela.setEnabled(false);
@@ -365,27 +371,65 @@ public class View extends JFrame {
 			list.setModel(defaultList);
 		}
 	}
-	
-	public void serverConnect(){
-		addLog("CLIENTE: Conexão efetuada em servidor próprio #IAmTheServer");
-		
-		main.iAmTheServer();
-		tf_servidor.setEnabled(false);
-		tf_porta.setEnabled(false);
-		tf_pesquisa.setEnabled(true);
-		tf_filtro.setEnabled(true);
-		
-		btnAcessar.setText("Desconectar");
-		btnIniciarComoServer.setEnabled(false);
-		btnPesquisar.setEnabled(true);
-		btnDownload.setEnabled(true);
-		btnLimparTabela.setEnabled(true);
-		
-		cb_tipoFiltro.setEnabled(true);
+
+	protected void download() {
+		int row = table.getSelectedRow();
+		ArquivoModel model = (ArquivoModel) table.getModel();
+		main.downloadArchive((Cliente) model.getValueAt(row, 5), (Arquivo) model.getValueAt(row,6));
+	}
+
+	protected void clearTable() {
+		table.setModel(defaultModel);
+	}
+
+	public void connect(){
+		if(btnOn.isEnabled()){
+			addLogClient("CLIENTE: Conexão sendo efetuada em " + tf_servidor.getText() + ":" + tf_porta.getText());
+			main.connectServer(tf_servidor.getText(), Integer.valueOf(tf_porta.getText()));
+			
+			tf_servidor.setEnabled(false);
+			tf_porta.setEnabled(false);
+			tf_pesquisa.setEnabled(true);
+			tf_filtro.setEnabled(true);
+			
+			btnOff.setEnabled(true);
+			btnOn.setEnabled(false);
+			btnServerOn.setEnabled(false);	
+			btnPesquisar.setEnabled(true);
+			btnDownload.setEnabled(true);
+			btnLimparTabela.setEnabled(true);
+			
+			cb_tipoFiltro.setEnabled(true);
+		}
 	}
 	
-	public void addLog(String log){
-		txt_Log.setText(txt_Log.getText() + log + "\n");
+	public void serverConnect(){
+		if(btnServerOn.isEnabled()){
+			addLogClient("CLIENTE: Conexão efetuada em servidor próprio #IAmTheServer");
+			
+			main.iAmTheServer();
+			tf_servidor.setEnabled(false);
+			tf_porta.setEnabled(false);
+			tf_pesquisa.setEnabled(true);
+			tf_filtro.setEnabled(true);
+	
+			btnOff.setEnabled(true);
+			btnOn.setEnabled(false);
+			btnServerOn.setEnabled(false);
+			btnPesquisar.setEnabled(true);
+			btnDownload.setEnabled(true);
+			btnLimparTabela.setEnabled(true);
+			
+			cb_tipoFiltro.setEnabled(true);
+		}
+	}
+	
+	public void addLogServer(String log){
+		txt_logServer.setText(txt_logServer.getText() + log + "\n");
+	}
+	
+	public void addLogClient(String log){
+		txt_logClient.setText(txt_logClient.getText() + log + "\n");
 	}
 	
 	public void setWindowTitle(String ip){
