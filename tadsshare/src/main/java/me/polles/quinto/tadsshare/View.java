@@ -28,6 +28,10 @@ import javax.swing.JTextPane;
 import javax.swing.JComboBox;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -384,22 +388,30 @@ public class View extends JFrame {
 
 	public void connect(){
 		if(btnOn.isEnabled()){
-			addLogClient("CLIENTE: Conexão sendo efetuada em " + tf_servidor.getText() + ":" + tf_porta.getText());
-			main.connectServer(tf_servidor.getText(), Integer.valueOf(tf_porta.getText()));
-			
-			tf_servidor.setEnabled(false);
-			tf_porta.setEnabled(false);
-			tf_pesquisa.setEnabled(true);
-			tf_filtro.setEnabled(true);
-			
-			btnOff.setEnabled(true);
-			btnOn.setEnabled(false);
-			btnServerOn.setEnabled(false);	
-			btnPesquisar.setEnabled(true);
-			btnDownload.setEnabled(true);
-			btnLimparTabela.setEnabled(true);
-			
-			cb_tipoFiltro.setEnabled(true);
+			String server = tf_servidor.getText();
+			String port = tf_porta.getText();
+			try{
+				main.connectServer(server, port);
+				addLogClient("CLIENTE: Conexão sendo efetuada em " + server + ":" + port);
+				
+				tf_servidor.setEnabled(false);
+				tf_porta.setEnabled(false);
+				tf_pesquisa.setEnabled(true);
+				tf_filtro.setEnabled(true);
+				
+				btnOff.setEnabled(true);
+				btnOn.setEnabled(false);
+				btnServerOn.setEnabled(false);	
+				btnPesquisar.setEnabled(true);
+				btnDownload.setEnabled(true);
+				btnLimparTabela.setEnabled(true);
+				
+				cb_tipoFiltro.setEnabled(true);
+			} catch (IPNotFoundException e) {
+				popup("O Servidor é obrigatório para efetuar a conexão.");
+			} catch (PortNotFoundException e) {
+				popup("A Porta é obrigatória para efetuar a conexão.");
+			}
 		}
 	}
 	
@@ -425,11 +437,11 @@ public class View extends JFrame {
 	}
 	
 	public void addLogServer(String log){
-		txt_logServer.setText(txt_logServer.getText() + log + "\n");
+		txt_logServer.setText(txt_logServer.getText() + LocalDateTime.now().toString() + " -> " + log + "\n");
 	}
 	
 	public void addLogClient(String log){
-		txt_logClient.setText(txt_logClient.getText() + log + "\n");
+		txt_logClient.setText(txt_logClient.getText() + LocalDateTime.now().toString() + " -> " + log + "\n");
 	}
 	
 	public void setWindowTitle(String ip){

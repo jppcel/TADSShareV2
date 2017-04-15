@@ -34,6 +34,7 @@ public class Main {
 	private Cliente cliente;
 	private int isConnected;
 	private Thread server;
+	private Thread updateList;
 	private int port;
 	private File share;
 	
@@ -91,9 +92,11 @@ public class Main {
 		Registry registry;
 		try {			
 			server = new Thread(new Server(Main.this));
-			server.start();
-			
+			server.start();		
 			Thread.sleep(500);
+			
+			updateList = new Thread(new UpdateListThread(Main.this));
+			updateList.start();
 			
 			registry = LocateRegistry.getRegistry(ip, port);
 			iserver =  (IServer) registry.lookup(IServer.NOME_SERVICO);
@@ -108,11 +111,17 @@ public class Main {
 		}
 	}
 	
-	public void connectServer(String ip, int port){
+	public void connectServer(String ip, String port){
 		try {
-			rmiConnect(ip, port);
-			iserver.registrarCliente(cliente);
-			isConnected = 1;
+			if(ip.isEmpty()){
+				throw new IPNotFoundException();
+			} else if(port.isEmpty()){
+				throw new PortNotFoundException();
+			} else {
+				rmiConnect(ip, Integer.valueOf(port));
+				iserver.registrarCliente(cliente);
+				isConnected = 1;
+			}
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
@@ -134,6 +143,7 @@ public class Main {
 			iserver = null;
 			isConnected = 0;
 			server.interrupt();
+			updateList.interrupt();
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}

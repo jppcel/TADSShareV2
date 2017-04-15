@@ -27,7 +27,6 @@ import br.univel.jshare.comum.TipoFiltro;
 public class Server implements IServer, Runnable, Serializable {
 	private static final long serialVersionUID = 1L;
 	private List<Cliente> clientes;
-	private int proxId;
 	private Map<Cliente, List<Arquivo>> arquivos;
 	private IServer iserver;
 	private final Main main;
@@ -39,8 +38,6 @@ public class Server implements IServer, Runnable, Serializable {
 	}
 
 	public void registrarCliente(Cliente cliente) throws RemoteException {
-		//cliente.setId(proxId);
-		proxId++;
 		clientes.add(cliente);
 		
 		main.logServer("SERVIDOR: Conexão -> " + cliente.getNome());
@@ -123,6 +120,7 @@ public class Server implements IServer, Runnable, Serializable {
 			arquivos.remove(cliente);
 		}
 		clientes.remove(cliente);
+		main.updateClientList(clientes);
 		main.logServer("SERVIDOR: Desconexão -> " + cliente.getNome() + "(" +  cliente.getIp() + ")");
 	}
 
