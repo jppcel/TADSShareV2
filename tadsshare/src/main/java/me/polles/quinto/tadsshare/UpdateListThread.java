@@ -14,11 +14,10 @@ public class UpdateListThread implements Runnable{
 				main.logClient("CLIENTE: Atualizando lista de arquivos...");
 				main.atualizarArquivos();
 				main.publishArchivesList();
-				Thread.sleep(5000);
+				Thread.sleep(15000);
 			}
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			main.logClient("CLIENTE: A atualização de arquivos foi finalizada.");
 		}
 	}
 
