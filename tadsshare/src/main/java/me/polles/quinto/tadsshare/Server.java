@@ -51,8 +51,12 @@ public class Server implements IServer, Runnable, Serializable {
 			if(arquivos.get(cliente) != null){
 				arquivos.remove(cliente);
 			}
-			arquivos.put(cliente, lista);
-			main.logServer("SERVIDOR: Lista de Arquivos -> O cliente " + cliente.getNome() + " publicou uma lista de arquivos.");
+			if(lista.isEmpty()){
+				main.logServer("SERVIDOR: Lista de Arquivos -> O cliente " + cliente.getNome() + " tentou publicar uma lista de arquivos vazia.");
+			}else{
+				arquivos.put(cliente, lista);
+				main.logServer("SERVIDOR: Lista de Arquivos -> O cliente " + cliente.getNome() + " publicou uma lista de arquivos.");
+			}
 		}
 	}
 
