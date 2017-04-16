@@ -1,4 +1,4 @@
-package me.polles.quinto.tadsshare;
+package me.polles.quinto.tadsshare.exceptions;
 
 public class FileNotFoundException extends RuntimeException{
 

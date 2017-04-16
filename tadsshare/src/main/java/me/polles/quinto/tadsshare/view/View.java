@@ -1,4 +1,4 @@
-package me.polles.quinto.tadsshare;
+package me.polles.quinto.tadsshare.view;
 
 import java.awt.BorderLayout;
 
@@ -11,6 +11,10 @@ import javax.swing.table.TableModel;
 import br.univel.jshare.comum.Arquivo;
 import br.univel.jshare.comum.Cliente;
 import br.univel.jshare.comum.TipoFiltro;
+import me.polles.quinto.tadsshare.Main;
+import me.polles.quinto.tadsshare.exceptions.IPNotFoundException;
+import me.polles.quinto.tadsshare.exceptions.PortNotFoundException;
+import me.polles.quinto.tadsshare.model.ArquivoModel;
 
 import java.awt.GridBagLayout;
 import javax.swing.JLabel;

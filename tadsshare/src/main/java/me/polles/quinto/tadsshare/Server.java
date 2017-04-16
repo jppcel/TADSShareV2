@@ -19,6 +19,7 @@ import br.univel.jshare.comum.Arquivo;
 import br.univel.jshare.comum.Cliente;
 import br.univel.jshare.comum.IServer;
 import br.univel.jshare.comum.TipoFiltro;
+import me.polles.quinto.tadsshare.exceptions.FileNotFoundException;
 
 /**
  * @author Joao

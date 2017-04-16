@@ -1,4 +1,4 @@
-package me.polles.quinto.tadsshare;
+package me.polles.quinto.tadsshare.model;
 
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
