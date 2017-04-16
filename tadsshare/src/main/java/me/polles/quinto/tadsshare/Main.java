@@ -23,6 +23,9 @@ import javax.swing.JOptionPane;
 import br.univel.jshare.comum.Cliente;
 import br.univel.jshare.comum.IServer;
 import br.univel.jshare.comum.TipoFiltro;
+import me.polles.quinto.tadsshare.exceptions.IPNotFoundException;
+import me.polles.quinto.tadsshare.exceptions.PortNotFoundException;
+import me.polles.quinto.tadsshare.view.View;
 import br.dagostini.exemplos.Md5Util;
 import br.univel.jshare.comum.Arquivo;
 
