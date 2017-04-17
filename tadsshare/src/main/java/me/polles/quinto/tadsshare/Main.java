@@ -181,6 +181,10 @@ public class Main {
 	public int getIsConnected() {
 		return isConnected;
 	}
+	
+	private void testExtension(String s){
+		s.substring(s.lastIndexOf("."), s.length());
+	}
 
 	public void downloadArchive(Cliente cliente, Arquivo arquivo) {
 		try {
@@ -188,6 +192,12 @@ public class Main {
 			IServer iserverDownload = (IServer) serverDownload.lookup(IServer.NOME_SERVICO);
 			byte[] data = iserverDownload.baixarArquivo(cliente, arquivo);
 			if(data != null){
+				try{
+					testExtension(arquivo.getNome());
+				}catch(StringIndexOutOfBoundsException e){
+					arquivo.setNome(arquivo.getNome()+"."+arquivo.getExtensao());
+				}
+				
 				String path = "share"+File.separatorChar+arquivo.getNome();
 				File file = new File(path);
 				
@@ -201,6 +211,7 @@ public class Main {
 				if(arquivo.getMd5().equals(Md5Util.getMD5Checksum(path))){
 					view.popup("Arquivo baixado!");
 					publishArchivesList();
+					addDown(arquivo.getTamanho());
 				}else{
 					view.popup("Arquivo corrompido!");
 					file = new File(path);
@@ -234,5 +245,13 @@ public class Main {
 
 	public void atualizarArquivos() {
 		capturaArquivos(share);
+	}
+	
+	public void addUp(long size){
+		view.addUp(size);
+	}
+	
+	public void addDown(long size){
+		view.addDown(size);
 	}
 }

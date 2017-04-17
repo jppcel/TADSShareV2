@@ -76,6 +76,11 @@ public class View extends JFrame {
 	private JScrollPane scrollPane_1;
 	private JTextPane txt_logServer;
 	private JTextPane txt_logClient;
+	private JLabel lblTotais;
+	private JLabel lblTotaisDU;
+	
+	private long totalUp;
+	private long totalDown;
 
 
 	/**
@@ -270,6 +275,23 @@ public class View extends JFrame {
 				clearTable();
 			}
 		});
+		
+		lblTotais = new JLabel("Totais:");
+		GridBagConstraints gbc_lblTotais = new GridBagConstraints();
+		gbc_lblTotais.anchor = GridBagConstraints.EAST;
+		gbc_lblTotais.insets = new Insets(0, 0, 5, 5);
+		gbc_lblTotais.gridx = 0;
+		gbc_lblTotais.gridy = 5;
+		panelHeader.add(lblTotais, gbc_lblTotais);
+		
+		lblTotaisDU = new JLabel("Download: 0 | Upload: 0");
+		GridBagConstraints gbc_lblTotaisDU = new GridBagConstraints();
+		gbc_lblTotaisDU.anchor = GridBagConstraints.WEST;
+		gbc_lblTotaisDU.gridwidth = 4;
+		gbc_lblTotaisDU.insets = new Insets(0, 0, 5, 5);
+		gbc_lblTotaisDU.gridx = 1;
+		gbc_lblTotaisDU.gridy = 5;
+		panelHeader.add(lblTotaisDU, gbc_lblTotaisDU);
 		btnLimparTabela.setEnabled(false);
 		GridBagConstraints gbc_btnLimparTabela = new GridBagConstraints();
 		gbc_btnLimparTabela.fill = GridBagConstraints.HORIZONTAL;
@@ -464,6 +486,16 @@ public class View extends JFrame {
 
 	public void setJList(DefaultListModel<String> listModel) {
 		list.setModel(listModel);
+	}
+	
+	public void addUp(long size){
+		totalUp += size;
+		lblTotaisDU.setText("Download: "+totalDown+" | Upload: "+totalUp);
+	}
+	
+	public void addDown(long size){
+		totalDown += size;
+		lblTotaisDU.setText("Download: "+totalDown+" | Upload: "+totalUp);
 	}
 
 }

@@ -107,6 +107,7 @@ public class Server implements IServer, Runnable, Serializable {
 			if(file.exists()){
 				data = Files.readAllBytes(path);
 				main.logClient("CLIENTE: " + cliente.getNome() + ", " + cliente.getIp() + " baixou o arquivo " + arquivo.getNome());
+				main.addUp(arquivo.getTamanho());
 				return data;
 			}else{
 				main.atualizarArquivos();
