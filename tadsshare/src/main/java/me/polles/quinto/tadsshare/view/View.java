@@ -490,12 +490,12 @@ public class View extends JFrame {
 	
 	public void addUp(long size){
 		totalUp += size;
-		lblTotaisDU.setText("Download: "+totalDown+" | Upload: "+totalUp);
+		lblTotaisDU.setText("Download: "+totalDown+"B | Upload: "+totalUp+"B");
 	}
 	
 	public void addDown(long size){
 		totalDown += size;
-		lblTotaisDU.setText("Download: "+totalDown+" | Upload: "+totalUp);
+		lblTotaisDU.setText("Download: "+totalDown+"B | Upload: "+totalUp+"B");
 	}
 
 }
