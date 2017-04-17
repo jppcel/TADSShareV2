@@ -1,4 +1,4 @@
-package me.polles.quinto.tadsshare;
+package me.polles.quinto.tadsshare.model;
 
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
@@ -26,12 +26,14 @@ public class ArquivoModel extends AbstractTableModel implements TableModel{
 			List<Object> objetos = new ArrayList<Object>();
 			for (Entry<Cliente, List<Arquivo>> e : mapArquivos.entrySet()) {
 				for (Arquivo arquivo : e.getValue()) {
+					objetos = new ArrayList<Object>();
 					objetos.add(e.getKey().getNome());
-					objetos.add(e.getKey().getIp());
-					objetos.add(arquivo.getNome() + "." + arquivo.getExtensao());
+					objetos.add(e.getKey().getIp() + ":" + e.getKey().getPorta());
+					objetos.add(arquivo.getNome());
 					objetos.add(String.valueOf(arquivo.getTamanho()));
+					objetos.add(arquivo.getMd5());
+					objetos.add(e.getKey());
 					objetos.add(arquivo);
-					objetos.add(e);
 					matrix2.put(rows++, objetos);
 				}
 			}
@@ -39,9 +41,9 @@ public class ArquivoModel extends AbstractTableModel implements TableModel{
 	}
 
 
-	@Override
+	@Override		
 	public int getColumnCount() {
-		return 4;
+		return 5;
 	}
 
 	@Override
@@ -55,6 +57,8 @@ public class ArquivoModel extends AbstractTableModel implements TableModel{
 				return "Nome do Arquivo";
 			case 3:
 				return "Tamanho";
+			case 4:
+				return "Hash";
 		}
 		return null;
 	}

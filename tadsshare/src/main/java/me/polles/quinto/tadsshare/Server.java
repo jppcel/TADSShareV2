@@ -1,5 +1,6 @@
 package me.polles.quinto.tadsshare;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Files;
@@ -18,6 +19,7 @@ import br.univel.jshare.comum.Arquivo;
 import br.univel.jshare.comum.Cliente;
 import br.univel.jshare.comum.IServer;
 import br.univel.jshare.comum.TipoFiltro;
+import me.polles.quinto.tadsshare.exceptions.FileNotFoundException;
 
 /**
  * @author Joao
@@ -26,12 +28,9 @@ import br.univel.jshare.comum.TipoFiltro;
 public class Server implements IServer, Runnable, Serializable {
 	private static final long serialVersionUID = 1L;
 	private List<Cliente> clientes;
-	private int proxId;
 	private Map<Cliente, List<Arquivo>> arquivos;
 	private IServer iserver;
 	private final Main main;
-	
-	public static final int PORTA_TCPIP = 1818;
 	
 	public Server(Main main){
 		clientes = new ArrayList<Cliente>();
@@ -40,11 +39,11 @@ public class Server implements IServer, Runnable, Serializable {
 	}
 
 	public void registrarCliente(Cliente cliente) throws RemoteException {
-		cliente.setId(proxId);
-		proxId++;
 		clientes.add(cliente);
 		
-		main.log("Conexão -> " + cliente.getNome());
+		main.logServer("SERVIDOR: Conexão -> " + cliente.getNome());
+		
+		main.updateClientList(clientes);
 	}
 
 	public void publicarListaArquivos(Cliente cliente, List<Arquivo> lista) throws RemoteException {
@@ -52,8 +51,12 @@ public class Server implements IServer, Runnable, Serializable {
 			if(arquivos.get(cliente) != null){
 				arquivos.remove(cliente);
 			}
-			arquivos.put(cliente, lista);
-			main.log("Lista de Arquivos -> O cliente " + cliente.getNome() + " publicou uma lista de arquivos.");
+			if(lista.isEmpty()){
+				main.logServer("SERVIDOR: Lista de Arquivos -> O cliente " + cliente.getNome() + " tentou publicar uma lista de arquivos vazia.");
+			}else{
+				arquivos.put(cliente, lista);
+				main.logServer("SERVIDOR: Lista de Arquivos -> O cliente " + cliente.getNome() + " publicou uma lista de arquivos.");
+			}
 		}
 	}
 
@@ -99,13 +102,23 @@ public class Server implements IServer, Runnable, Serializable {
 	public byte[] baixarArquivo(Cliente cliente, Arquivo arquivo) throws RemoteException {
 		byte[] data = null;
 		Path path = Paths.get(arquivo.getPath());
+		File file = new File(arquivo.getPath());
 		try {
-			data = Files.readAllBytes(path);
-			main.log("CLIENTE: " + cliente.getNome() + ", " + cliente.getIp() + " baixou o arquivo " + arquivo.getNome());
-			return data;
+			if(file.exists()){
+				data = Files.readAllBytes(path);
+				main.logClient("CLIENTE: " + cliente.getNome() + ", " + cliente.getIp() + " baixou o arquivo " + arquivo.getNome());
+				main.addUp(arquivo.getTamanho());
+				return data;
+			}else{
+				main.atualizarArquivos();
+				throw new FileNotFoundException();
+			}
 		} catch (IOException e) {
 			throw new RuntimeException(e);
+		} catch (FileNotFoundException e){
+			main.logServer("SERVIDOR: O cliente " + cliente.getNome() + "(" + cliente.getIp() + ") tentou baixar o arquivo " + arquivo.getNome() + " que não se encontra mais disponível.");
 		}
+		return null;
 	}
 
 	public void desconectar(Cliente cliente) throws RemoteException {
@@ -113,17 +126,18 @@ public class Server implements IServer, Runnable, Serializable {
 			arquivos.remove(cliente);
 		}
 		clientes.remove(cliente);
-		main.log("Desconexão -> " + cliente.getNome());
+		main.updateClientList(clientes);
+		main.logServer("SERVIDOR: Desconexão -> " + cliente.getNome() + "(" +  cliente.getIp() + ")");
 	}
 
 	@Override
 	public void run() {
 		try {
-			main.log("SERVIDOR: Iniciando...");
+			main.logServer("SERVIDOR: Iniciando...");
 			iserver = (IServer) UnicastRemoteObject.exportObject(this, 0);
-			Registry registry = LocateRegistry.createRegistry(PORTA_TCPIP);
+			Registry registry = LocateRegistry.createRegistry(main.getPort());
 			registry.rebind(IServer.NOME_SERVICO, iserver);
-			main.log("SERVIDOR: Iniciado. Aguardando conexões.");
+			main.logServer("SERVIDOR: Iniciado. Aguardando conexões.");
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
